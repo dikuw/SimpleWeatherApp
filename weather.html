@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.9/css/weather-icons.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+	<title>Simple Local Weather App</title>
+
+	<script src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="col-md-12 text-center">
+            <h1>Local Weather App</h1>
+            <p>Gives the current weather at your current location*</p>
+        </div>
+        <div class="col-md-12 text-center" id="location">
+            ... Loading Your Location ...
+        </div>
+        <div class="col-md-12 text-center" id="temp">
+            ... 999 ...
+        </div>
+        <div class="col-md-12 text-center" id="weathertype">
+            ... sunny, cloudy, mix ...
+        </div>
+        <div class="col-md-12 text-center" id="weatherimage">
+            <h3>... visualize ...</h3>
+        </div>
+        <div class="col-md-12 text-center">
+            <form>
+                <label for="degType">Units: </label>
+                <input type="radio" name="degType" value="C"> Celcius
+                <input type="radio" name="degType" value="F" checked> Fahrenheit
+            </form>
+        </div>
+        <footer>
+            <div class="container">
+                <div class="col-lg-12 text-center">         
+                    <p><h6>*location services must be enabled</h6></p>
+                    <p><h6>*JavaScript must be enabled</h6></p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+<script>
+  $(document).ready(function () {
+    var openWeatherMapAPI = "";
+    var weatherId = 800;
+    var temp = 999;
+
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(function(position){
+        openWeatherMapAPI = "http://api.openweathermap.org/data/2.5/weather?lat=" +
+                             position.coords.latitude  + "&lon=" + position.coords.longitude +
+                             "&units=imperial&appid=88e5c6f83341295f393ce1edb1d37184";
+        fetchWeather(openWeatherMapAPI);
+      });
+    }
+
+    function fetchWeather(API) {
+      $.getJSON(API, function(json){
+        temp = parseInt(json.main.temp);
+
+        if ($('input[name="degType"]:checked').val() === "F" ) {
+          $("#temp").html(temp + " deg F");
+        } else {
+          $("#temp").html(toCelsius(temp) + " deg C");
+        }
+
+        $("#location").html(json.name + ", " + json.sys.country);
+        $("#weathertype").html(json.weather[0].description);
+
+        weatherId = json.weather[0].id;
+
+        $("#weatherimage").html('');
+
+        if (weatherId >= 200 && weatherId < 550) {
+          $("#weatherimage").addClass('wi wi-day-rain');
+        } else if (weatherId >= 600 && weatherId < 700){
+	  $("#weatherimage").addClass('wi wi-day-snow');
+        } else if (weatherId >= 700 && weatherId < 800){
+	  $("#weatherimage").addClass('wi wi-day-fog');
+        } else {
+          $("#weatherimage").addClass('wi wi-day-sunny');
+        }
+      });
+    }
+
+    $("input[name='degType']").click(function(){
+      fetchWeather(openWeatherMapAPI);
+    });
+
+    function toCelsius(f){
+      return parseInt((5 / 9) * (f - 32));
+    }
+  });
+  
+</script>
+
+</body>
+</html>
